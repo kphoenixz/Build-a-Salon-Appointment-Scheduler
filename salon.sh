@@ -1,6 +1,8 @@
 #! /bin/bash
 
 PSQL="psql -X --username=freecodecamp --dbname=salon --tuples-only -c"
+echo -e "\n~~~~~ Salon Services Appointment ~~~~~\n"
+echo -e "\nHow may I help you?"
 
 MAIN_MENU(){
   if [[ $1 ]]
@@ -8,15 +10,14 @@ MAIN_MENU(){
     echo -e "\n$1"
   fi
 
-  AVAILABLE_SERVICES=$($PSQL "SELECT service_id, name FROM services")
+  AVAILABLE_SERVICES=$($PSQL "SELECT * FROM services")
   echo "$AVAILABLE_SERVICES" | while read SERVICE_ID BAR NAME
   do
     SERVICE_ID=$(echo $SERVICE_ID | sed 's/ //g')
     NAME=$(echo $NAME | sed 's/ //g')
     echo "$SERVICE_ID) $NAME"
   done
-  echo -e "\n~~~~~ Salon Services Appointment ~~~~~\n"
-  echo -e "\nHow may I help you?"
+  
   read SERVICE_ID_SELECTED
   case $SERVICE_ID_SELECTED in
     [1-5]) BOOK_AN_APPOINTMENT ;;
@@ -59,8 +60,8 @@ BOOK_AN_APPOINTMENT(){
     INSERT_APPOINTMENT_RESULT=$($PSQL "INSERT INTO appointments(customer_id, service_id, time) VALUES($CUSTOMER_ID, $SERVICE_ID_SELECTED, '$SERVICE_TIME')")
     if [[ $INSERT_APPOINTMENT_RESULT == "INSERT 0 1" ]]
     then
-      SERVICE_NAME=$($PSQL "SELECT name FROM services WHERE service_id = $SERVICE_ID_SELECTED")
-      echo -e "\nI have put you down for a$SERVICE_NAME at $SERVICE_TIME, $CUSTOMER_NAME."
+      SERVICE_NAME=$($PSQL "SELECT name FROM services WHERE service_id = $SERVICE_ID_SELECTED" | sed 's/ //g')
+      echo -e "\nI have put you down for a $SERVICE_NAME at $SERVICE_TIME, $CUSTOMER_NAME."
       fi
   fi
 }
